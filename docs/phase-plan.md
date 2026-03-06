@@ -49,20 +49,25 @@ Each phase builds on the previous one and adds operational capability.
 
 ---
 
-## Phase 2 — Agent Integration
+## Phase 2 — Agent Integration ✅
 
 **Goal:** Integrate the core AI agents into the production loop.
 
 ### Deliverables
-- [ ] Orchestrator Agent implemented
-- [ ] Game Design Agent implemented
-- [ ] Build Agent implemented
-- [ ] Content Agent implemented
-- [ ] Reporting Agent implemented
-- [ ] Agents can create tasks and update game status
-- [ ] Dashboard reflects agent activities in real time
+- [x] BaseAgent shared helper layer implemented
+- [x] OrchestratorAgent implemented (phase gating, pending-review guard, auto-trigger)
+- [x] GameDesignAgent implemented (template MDD per genre, tasks, design_document_approval review)
+- [x] BuildAgent implemented (genre-specific Unity task list, build-plan.md, prototype_go_no_go review)
+- [x] ContentAgent implemented (YouTube outline, store listing EN+TR, short-form plan, content-package.md)
+- [x] Agents create tasks and update game phase in SQLite
+- [x] Dashboard game detail page reflects agent pipeline (phase badge, action button, reviews, tasks)
+- [x] `/agents/run` endpoint wired to OrchestratorAgent
+- [x] Full end-to-end pipeline tested: Stack Jump → idea_pending → design → build → content → published
+- [x] Generated artifacts: mini-design-document.md, build-plan.md, content-package.md
 
-**Status:** Not Started
+**Completed:** 2026-03-06 (v0.4)
+
+**Status:** ✅ Complete
 
 ---
 

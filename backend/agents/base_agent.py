@@ -26,7 +26,7 @@ class BaseAgent:
         )
         conn.commit()
         conn.close()
-        print(f"[{self.name}] Game {game_id} phase → {phase}")
+        print(f"[{self.name}] Game {game_id} phase -> {phase}")
 
     def update_game_field(self, game_id: int, field: str, value: str) -> None:
         conn = get_connection()
