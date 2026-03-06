@@ -120,7 +120,25 @@
                 document.querySelector("#unity-fullscreen-button").onclick = () => {
                   unityInstance.SetFullscreen(1);
                 };
-
+                // Auto-focus canvas so Unity receives input immediately
+                canvas.focus();
+                // Show tap hint overlay
+                var hint = document.createElement("div");
+                hint.id = "tap-hint";
+                hint.innerText = "▶  TAP TO PLAY";
+                hint.style.cssText = "position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);" +
+                  "color:#fff;font-size:22px;font-family:sans-serif;font-weight:bold;pointer-events:none;" +
+                  "text-shadow:0 0 12px #0af;letter-spacing:2px;animation:pulse 1.2s ease-in-out infinite;";
+                var style = document.createElement("style");
+                style.textContent = "@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}";
+                document.head.appendChild(style);
+                canvas.parentElement.style.position = "relative";
+                canvas.parentElement.appendChild(hint);
+                canvas.addEventListener("mousedown", function(){ 
+                  var h = document.getElementById("tap-hint");
+                  if(h) h.remove();
+                  canvas.focus();
+                }, {once: false});
               }).catch((message) => {
                 alert(message);
               });
