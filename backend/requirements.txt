@@ -1,0 +1,12 @@
+# Mobile Game Factory — Backend Dependencies
+# Python 3.11+
+
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Data validation
+pydantic==2.8.2
+
+# Development utilities
+python-dotenv==1.0.1
