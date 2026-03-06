@@ -60,6 +60,11 @@ public static class AndroidBuilder
         PlayerSettings.Android.minSdkVersion       = AndroidSdkVersions.AndroidApiLevel24;
         PlayerSettings.Android.targetSdkVersion    = AndroidSdkVersions.AndroidApiLevel34;
 
+        // Force New Input System only (fixes "Unsupported Input Handling" dialog on Android)
+        var ps = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
+        var inputProp = ps.FindProperty("activeInputHandler");
+        if (inputProp != null) { inputProp.intValue = 1; ps.ApplyModifiedProperties(); }
+
         // Build options
         var buildOptions = development
             ? BuildOptions.Development | BuildOptions.AllowDebugging
