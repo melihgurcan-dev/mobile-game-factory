@@ -17,7 +17,7 @@ public class AudioManager : MonoBehaviour
 
     [Header("Music")]
     public AudioClip backgroundMusic;
-    [Range(0f, 1f)] public float musicVolume = 0.4f;
+    [Range(0f, 1f)] public float musicVolume = 0.55f;
     [Range(0f, 1f)] public float sfxVolume   = 0.85f;
 
     // Generated fallback clips
@@ -26,6 +26,7 @@ public class AudioManager : MonoBehaviour
     private AudioClip _genCombo;
     private AudioClip _genTap;
     private AudioClip _genFail;
+    private AudioClip _genMusic;
 
     private AudioSource sfxSource;
     private AudioSource musicSource;
@@ -38,16 +39,21 @@ public class AudioManager : MonoBehaviour
         sfxSource   = gameObject.AddComponent<AudioSource>();
         musicSource = gameObject.AddComponent<AudioSource>();
 
-        sfxSource.volume   = sfxVolume;
-        musicSource.volume = musicVolume;
-        musicSource.loop   = true;
+        sfxSource.volume        = sfxVolume;
+        sfxSource.spatialBlend  = 0f;   // 2D — no distance falloff
+        sfxSource.playOnAwake   = false;
+        musicSource.volume      = musicVolume;
+        musicSource.spatialBlend = 0f;
+        musicSource.loop        = true;
 
-        // Generate procedural clips on background thread equivalent (instant, PCM math)
-        _genPlace   = ProceduralAudio.Place();
-        _genPerfect = ProceduralAudio.Perfect();
-        _genCombo   = ProceduralAudio.Combo();
-        _genTap     = ProceduralAudio.Tap();
-        _genFail    = ProceduralAudio.Fail();
+        // Generate procedural clips
+        try { _genPlace   = ProceduralAudio.Place();   } catch (System.Exception e) { Debug.LogError($"[AM] Place failed: {e}"); }
+        try { _genPerfect = ProceduralAudio.Perfect(); } catch (System.Exception e) { Debug.LogError($"[AM] Perfect failed: {e}"); }
+        try { _genCombo   = ProceduralAudio.Combo();   } catch (System.Exception e) { Debug.LogError($"[AM] Combo failed: {e}"); }
+        try { _genTap     = ProceduralAudio.Tap();     } catch (System.Exception e) { Debug.LogError($"[AM] Tap failed: {e}"); }
+        try { _genFail    = ProceduralAudio.Fail();    } catch (System.Exception e) { Debug.LogError($"[AM] Fail failed: {e}"); }
+        try { _genMusic   = ProceduralAudio.Music();   } catch (System.Exception e) { Debug.LogError($"[AM] Music failed: {e}"); }
+        Debug.Log($"[AM] Clips — place={_genPlace}, perfect={_genPerfect}, combo={_genCombo}, tap={_genTap}, fail={_genFail}, music={_genMusic}");
     }
 
     void OnDestroy()
@@ -57,22 +63,27 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
-        if (backgroundMusic != null)
+        // Use Inspector override if assigned, else procedural (use Unity == for fake-null check)
+        AudioClip music = backgroundMusic == null ? _genMusic : backgroundMusic;
+        if (music != null)
         {
-            musicSource.clip = backgroundMusic;
+            musicSource.clip   = music;
+            musicSource.loop   = true;
+            musicSource.volume = musicVolume;
             musicSource.Play();
         }
+
     }
 
-    public void PlayPlace()   => PlaySFX(placeClip   ?? _genPlace);
-    public void PlayPerfect() => PlaySFX(perfectClip ?? _genPerfect);
-    public void PlayCombo()   => PlaySFX(comboClip   ?? _genCombo);
-    public void PlayTap()     => PlaySFX(tapClip     ?? _genTap);
-    public void PlayFail()    => PlaySFX(failClip    ?? _genFail);
+    public void PlayPlace()   => PlaySFX(placeClip   != null ? placeClip   : _genPlace);
+    public void PlayPerfect() => PlaySFX(perfectClip != null ? perfectClip : _genPerfect);
+    public void PlayCombo()   => PlaySFX(comboClip   != null ? comboClip   : _genCombo);
+    public void PlayTap()     => PlaySFX(tapClip     != null ? tapClip     : _genTap);
+    public void PlayFail()    => PlaySFX(failClip    != null ? failClip    : _genFail);
 
     private void PlaySFX(AudioClip clip)
     {
-        if (clip == null || sfxSource == null) return;
+        if (clip == null) { Debug.LogWarning("[AudioManager] clip is null"); return; }
         sfxSource.PlayOneShot(clip, sfxVolume);
     }
 
