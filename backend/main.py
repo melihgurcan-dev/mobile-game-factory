@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database import init_db
 from backend.routers import games, tasks, reviews, blockers
+from backend.routers import agent_runner
 
 app = FastAPI(
     title="Mobile Game Factory API",
@@ -34,6 +35,7 @@ app.include_router(games.router)
 app.include_router(tasks.router)
 app.include_router(reviews.router)
 app.include_router(blockers.router)
+app.include_router(agent_runner.router)
 
 
 @app.get("/", tags=["health"])

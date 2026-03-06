@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { fetchGames } from "@/lib/api";
+import Link from "next/link";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -117,26 +118,30 @@ export default function GamesPage() {
       ) : (
         <div className="space-y-3">
           {games.map((g: any) => (
-            <div key={g.id} className="bg-gray-800 rounded-lg p-5 flex items-center justify-between">
-              <div>
-                <div className="font-medium text-gray-100">{g.name}</div>
-                <div className="text-gray-500 text-xs mt-0.5">
-                  {g.genre || "No genre"} · Created {g.created_at?.slice(0, 10)}
+              <Link
+                key={g.id}
+                href={`/games/${g.id}`}
+                className="bg-gray-800 rounded-lg p-5 flex items-center justify-between hover:bg-gray-750 hover:border-gray-600 border border-transparent transition-colors cursor-pointer block"
+              >
+                <div>
+                  <div className="font-medium text-gray-100">{g.name}</div>
+                  <div className="text-gray-500 text-xs mt-0.5">
+                    {g.genre || "No genre"} · Created {g.created_at?.slice(0, 10)}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className={`text-xs px-2 py-1 rounded ${PHASE_COLORS[g.current_phase] || "bg-gray-700 text-gray-300"}`}>
-                  {g.current_phase}
-                </span>
-                <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-400">
-                  build: {g.build_status}
-                </span>
-                <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-400">
-                  content: {g.content_status}
-                </span>
-              </div>
-            </div>
-          ))}
+                <div className="flex gap-2 items-center">
+                  <span className={`text-xs px-2 py-1 rounded ${PHASE_COLORS[g.current_phase] || "bg-gray-700 text-gray-300"}`}>
+                    {g.current_phase}
+                  </span>
+                  <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-400">
+                    build: {g.build_status}
+                  </span>
+                  <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-400">
+                    content: {g.content_status}
+                  </span>
+                </div>
+              </Link>
+            ))}
         </div>
       )}
     </div>
