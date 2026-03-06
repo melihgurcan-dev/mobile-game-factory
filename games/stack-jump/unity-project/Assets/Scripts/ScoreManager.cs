@@ -19,9 +19,14 @@ public class ScoreManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         BestScore = PlayerPrefs.GetInt(BEST_KEY, 0);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     /// <param name="points">1 = normal, 2 = perfect placement</param>

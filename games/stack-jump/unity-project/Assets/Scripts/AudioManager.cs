@@ -23,9 +23,8 @@ public class AudioManager : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
 
         sfxSource   = gameObject.AddComponent<AudioSource>();
         musicSource = gameObject.AddComponent<AudioSource>();
@@ -33,6 +32,11 @@ public class AudioManager : MonoBehaviour
         sfxSource.volume   = sfxVolume;
         musicSource.volume = musicVolume;
         musicSource.loop   = true;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()

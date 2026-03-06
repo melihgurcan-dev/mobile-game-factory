@@ -42,8 +42,13 @@ public class StackController : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     void Start()
@@ -75,6 +80,8 @@ public class StackController : MonoBehaviour
     /// <summary>Called by GameManager.StartGame()</summary>
     public void BeginGame()
     {
+        currentBlockWidth = initialBlockWidth;  // always reset on (re)start
+        currentSpeed      = initialSpeed;
         gameRunning = true;
         SpawnMovingBlock();
     }
@@ -108,7 +115,8 @@ public class StackController : MonoBehaviour
         if (overlapWidth <= 0.02f)
         {
             // Complete miss — game over
-            DropPiece(movingBlock, movingX, movingW);
+            DropPiece(movingX, movingBlock.transform.position.y, movingW);
+            Destroy(movingBlock);
             movingBlock = null;
             AudioManager.Instance?.PlayFail();
             GameManager.Instance.TriggerGameOver();
@@ -135,7 +143,7 @@ public class StackController : MonoBehaviour
                 ? overlapRight + hangWidth * 0.5f
                 : overlapLeft  - hangWidth * 0.5f;
 
-            DropPiece(movingBlock, hangCenterX, hangWidth);
+            DropPiece(hangCenterX, movingBlock.transform.position.y, hangWidth);
 
             // Resize the placed block to the overlapping portion
             ResizeAndReposition(movingBlock, overlapCenterX, overlapWidth, currentStackTopY + blockHeight);
@@ -175,34 +183,29 @@ public class StackController : MonoBehaviour
         block.transform.localScale = new Vector3(width, blockHeight, 1f);
     }
 
-    void DropPiece(GameObject sourceBlock, float xCenter, float width)
+    void DropPiece(float xCenter, float y, float width)
     {
-        // Create a separate falling block for the cut-off piece
-        var piece = InstantiateBlock(xCenter, sourceBlock.transform.position.y, width, -1);
-        var rb = piece.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 2f;
-        float nudge = xCenter > 0 ? 1.2f : -1.2f;
-        rb.AddForce(new Vector2(nudge, -0.3f), ForceMode2D.Impulse);
+        var piece = InstantiateBlock(xCenter, y, width, -1);
+        float nudge = xCenter > 0 ? 1.5f : -1.5f;
+        piece.AddComponent<FallingPiece>().Launch(nudge);
         Destroy(piece, 2f);
-        Destroy(sourceBlock);
     }
 
     GameObject InstantiateBlock(float x, float y, float width, int colorIndex)
     {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        // Quad has no collider — avoids Rigidbody2D conflict entirely
+        var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
         go.name = "Block_" + blockCount;
         go.transform.position   = new Vector3(x, y, 0f);
         go.transform.localScale = new Vector3(width, blockHeight, 1f);
 
-        // Remove the 3D collider — we don't need physics for stacked blocks
-        Destroy(go.GetComponent<BoxCollider>());
-
         // Color
         var sr = go.GetComponent<Renderer>();
-        sr.material = new Material(Shader.Find("Sprites/Default"));
-        sr.material.color = colorIndex < 0
-            ? new Color(0.4f, 0.4f, 0.4f, 0.8f)   // cut-off piece: grey semitransparent
+        var mat = new Material(sr.sharedMaterial);
+        mat.color = colorIndex < 0
+            ? new Color(0.4f, 0.4f, 0.4f, 0.8f)
             : GameColors.GetColor(colorIndex);
+        sr.material = mat;
 
         return go;
     }

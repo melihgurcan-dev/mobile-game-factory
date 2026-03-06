@@ -22,12 +22,24 @@ public class GameManager : MonoBehaviour
         Instance = this;
     }
 
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     void Update()
     {
-        if (CurrentState != GameState.Playing) return;
+        bool tapped = Input.GetMouseButtonDown(0) ||
+                      (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
+        if (!tapped) return;
 
-        // Tap / click input
-        if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
+        if (CurrentState == GameState.Menu)
+        {
+            StartGame();
+            return;
+        }
+
+        if (CurrentState == GameState.Playing)
         {
             StackController.Instance?.PlaceBlock();
         }

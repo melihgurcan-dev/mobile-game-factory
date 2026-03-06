@@ -42,48 +42,47 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
-        // Show menu on start; hide everything else
-        menuPanel.SetActive(true);
-        gameOverPanel.SetActive(false);
-        scoreText.gameObject.SetActive(false);
-        bestText.gameObject.SetActive(false);
-
+        if (menuPanel)        menuPanel.SetActive(true);
+        if (gameOverPanel)    gameOverPanel.SetActive(false);
+        if (scoreText)        scoreText.gameObject.SetActive(false);
+        if (bestText)         bestText.gameObject.SetActive(false);
         if (gameOverNewBestText) gameOverNewBestText.gameObject.SetActive(false);
 
         int best = ScoreManager.Instance ? ScoreManager.Instance.BestScore : 0;
         if (menuBestScoreText) menuBestScoreText.text = best > 0 ? $"Best: {best}" : "";
+
+        // If menu panel isn't wired, auto-start immediately
+        if (menuPanel == null) GameManager.Instance?.StartGame();
     }
 
     // ── Event handlers ─────────────────────────────────────────────────────
 
     void HandleGameStart()
     {
-        menuPanel.SetActive(false);
-        gameOverPanel.SetActive(false);
-        scoreText.gameObject.SetActive(true);
-        bestText.gameObject.SetActive(true);
-        scoreText.text = "0";
-        bestText.text  = $"Best: {ScoreManager.Instance.BestScore}";
+        if (menuPanel)     menuPanel.SetActive(false);
+        if (gameOverPanel) gameOverPanel.SetActive(false);
+        if (scoreText)     { scoreText.gameObject.SetActive(true); scoreText.text = "0"; }
+        if (bestText)      { bestText.gameObject.SetActive(true);  bestText.text = $"Best: {ScoreManager.Instance.BestScore}"; }
         if (gameOverNewBestText) gameOverNewBestText.gameObject.SetActive(false);
     }
 
     void HandleGameOver()
     {
-        gameOverPanel.SetActive(true);
-        int score = ScoreManager.Instance.CurrentScore;
-        int best  = ScoreManager.Instance.BestScore;
-        gameOverScoreText.text = score.ToString();
-        gameOverBestText.text  = $"Best: {best}";
+        if (gameOverPanel) gameOverPanel.SetActive(true);
+        int score = ScoreManager.Instance ? ScoreManager.Instance.CurrentScore : 0;
+        int best  = ScoreManager.Instance ? ScoreManager.Instance.BestScore    : 0;
+        if (gameOverScoreText) gameOverScoreText.text = score.ToString();
+        if (gameOverBestText)  gameOverBestText.text  = $"Best: {best}";
     }
 
     void UpdateHUDScore(int score)
     {
-        scoreText.text = score.ToString();
+        if (scoreText) scoreText.text = score.ToString();
     }
 
     void HandleNewBest(int best)
     {
-        bestText.text = $"Best: {best}";
+        if (bestText) bestText.text = $"Best: {best}";
         if (gameOverNewBestText) gameOverNewBestText.gameObject.SetActive(true);
     }
 
