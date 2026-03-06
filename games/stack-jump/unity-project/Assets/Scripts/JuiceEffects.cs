@@ -1,14 +1,16 @@
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
-/// Spawns particle bursts on score milestones and screen shake on game over.
-/// Attach to a persistent GameObject alongside GameManager.
+/// Visual juice: screen shake, particle bursts, and block squish.
 /// </summary>
 public class JuiceEffects : MonoBehaviour
 {
+    public static JuiceEffects Instance { get; private set; }
+
     [Header("Particles")]
-    public ParticleSystem milestoneParticles;   // Burst at every 5 blocks
-    public ParticleSystem perfectParticles;     // Burst on perfect placement
+    public ParticleSystem milestoneParticles;
+    public ParticleSystem perfectParticles;
 
     [Header("Screen Shake")]
     public Camera targetCamera;
@@ -17,6 +19,17 @@ public class JuiceEffects : MonoBehaviour
 
     private Vector3 originalCamLocalPos;
     private bool    isShaking;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
 
     void OnEnable()
     {
@@ -52,6 +65,39 @@ public class JuiceEffects : MonoBehaviour
         if (perfectParticles == null) return;
         perfectParticles.transform.position = worldPos;
         perfectParticles.Play();
+    }
+
+    // ── Block squish on placement ───────────────────────────────────
+    public void SquishBlock(GameObject block)
+    {
+        if (block != null) StartCoroutine(SquishRoutine(block));
+    }
+
+    IEnumerator SquishRoutine(GameObject block)
+    {
+        if (block == null) yield break;
+        Vector3 original = block.transform.localScale;
+        Vector3 squished = new Vector3(original.x * 1.08f, original.y * 0.72f, original.z);
+
+        float t = 0f;
+        // Squish down
+        while (t < 1f)
+        {
+            t += Time.deltaTime / 0.05f;
+            if (block == null) yield break;
+            block.transform.localScale = Vector3.Lerp(original, squished, Mathf.SmoothStep(0, 1, t));
+            yield return null;
+        }
+        t = 0f;
+        // Bounce back
+        while (t < 1f)
+        {
+            t += Time.deltaTime / 0.1f;
+            if (block == null) yield break;
+            block.transform.localScale = Vector3.Lerp(squished, original, Mathf.SmoothStep(0, 1, t));
+            yield return null;
+        }
+        if (block != null) block.transform.localScale = original;
     }
 
     void TriggerShake()

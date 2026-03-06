@@ -35,6 +35,10 @@ public class StackController : MonoBehaviour
     private int nextMoveDirection = 1;  // alternates each block
     private bool gameRunning = false;
     private int blockCount = 0;
+    private int comboStreak = 0;       // consecutive perfect placements
+
+    // Fired when a block is placed: (isPerfect, comboStreak)
+    public static System.Action<bool, int> OnBlockPlaced;
 
     // camera
     private float cameraTargetY;
@@ -82,6 +86,7 @@ public class StackController : MonoBehaviour
     {
         currentBlockWidth = initialBlockWidth;  // always reset on (re)start
         currentSpeed      = initialSpeed;
+        comboStreak       = 0;
         gameRunning = true;
         SpawnMovingBlock();
     }
@@ -123,40 +128,47 @@ public class StackController : MonoBehaviour
             return;
         }
 
-        // ── Perfect placement bonus ────────────────────────────────────
-        bool isPerfect = Mathf.Abs(movingX - stackX) < 0.08f;
+        // ── Perfect placement ──────────────────────────────────────────
+        bool isPerfect = Mathf.Abs(movingX - stackX) < 0.12f;
         float finalWidth = isPerfect ? stackW : overlapWidth;
 
         if (isPerfect)
         {
-            // Align perfectly, no cut
+            comboStreak++;
             ResizeAndReposition(movingBlock, stackX, finalWidth, currentStackTopY + blockHeight);
-            AudioManager.Instance?.PlayPerfect();
+            if (comboStreak >= 3)
+                AudioManager.Instance?.PlayCombo();
+            else
+                AudioManager.Instance?.PlayPerfect();
         }
         else
         {
+            comboStreak = 0;
             float overlapCenterX = (overlapLeft + overlapRight) * 0.5f;
 
-            // Spawn the falling off-cut piece
             float hangWidth = movingW - overlapWidth;
             float hangCenterX = movingX > stackX
                 ? overlapRight + hangWidth * 0.5f
                 : overlapLeft  - hangWidth * 0.5f;
 
             DropPiece(hangCenterX, movingBlock.transform.position.y, hangWidth);
-
-            // Resize the placed block to the overlapping portion
             ResizeAndReposition(movingBlock, overlapCenterX, overlapWidth, currentStackTopY + blockHeight);
             currentBlockWidth = overlapWidth;
             AudioManager.Instance?.PlayPlace();
         }
+
+        // Squish animation on placed block
+        JuiceEffects.Instance?.SquishBlock(movingBlock);
 
         stack.Add(movingBlock);
         movingBlock = null;
         blockCount++;
         currentStackTopY += blockHeight;
 
-        ScoreManager.Instance?.AddScore(isPerfect ? 2 : 1);
+        // Combo score: +1 base, +1 per streak level (capped at +4 bonus)
+        int bonus = isPerfect ? Mathf.Min(comboStreak, 5) : 1;
+        ScoreManager.Instance?.AddScore(bonus);
+        OnBlockPlaced?.Invoke(isPerfect, comboStreak);
         cameraTargetY = currentStackTopY + CAM_Y_OFFSET;
 
         // Speed increase
@@ -199,9 +211,9 @@ public class StackController : MonoBehaviour
         go.transform.position   = new Vector3(x, y, 0f);
         go.transform.localScale = new Vector3(width, blockHeight, 1f);
 
-        // Color
+        // Color — use Unlit/Color so shader is always included in WebGL/Android builds
         var sr = go.GetComponent<Renderer>();
-        var mat = new Material(sr.sharedMaterial);
+        var mat = new Material(Shader.Find("Unlit/Color"));
         mat.color = colorIndex < 0
             ? new Color(0.4f, 0.4f, 0.4f, 0.8f)
             : GameColors.GetColor(colorIndex);
