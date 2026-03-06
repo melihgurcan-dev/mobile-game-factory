@@ -7,7 +7,7 @@ Each phase builds on the previous one and adds operational capability.
 
 ---
 
-## Phase 0 — Foundation / System Definition
+## Phase 0 — Foundation / System Definition ✅
 
 **Goal:** Define the system, prepare the environment, create the project skeleton.
 
@@ -19,29 +19,33 @@ Each phase builds on the previous one and adds operational capability.
 - [x] `docs/system-blueprint-v1.md` written
 - [x] `.gitignore` created
 - [x] `README.md` written and encoding fixed
-- [ ] `docs/phase-plan.md` filled ← current
-- [ ] `docs/agent-hierarchy.md` filled
-- [ ] `docs/workflow.md` filled
-- [ ] Git initialized + first commit
+- [x] `docs/phase-plan.md` filled
+- [x] `docs/agent-hierarchy.md` filled
+- [x] `docs/workflow.md` filled
+- [x] Git initialized + first commit (2026-03-06)
 
-**Status:** In Progress
+**Status:** ✅ Complete
 
 ---
 
-## Phase 1 — MVP Skeleton
+## Phase 1 — MVP Skeleton 🔄
 
 **Goal:** Build a working system skeleton with minimal but functional pieces.
 
 ### Deliverables
-- [ ] Python backend bootstrapped (FastAPI)
-- [ ] SQLite schema defined (games, tasks, agents, reviews, blockers)
-- [ ] Basic API endpoints created (`/games`, `/tasks`, `/reviews`)
-- [ ] Next.js dashboard initialized
-- [ ] Dashboard pages: overview, game list, review inbox
-- [ ] Dashboard connects to backend API
-- [ ] First dummy game + task + review flow works end to end
+- [x] Python backend bootstrapped (FastAPI + uvicorn)
+- [x] SQLite schema defined (games, tasks, agents, reviews, blockers)
+- [x] Basic API endpoints created (`/games`, `/tasks`, `/reviews`, `/blockers`)
+- [x] Python venv configured, dependencies installed
+- [x] Database initialized, default agents seeded
+- [x] End-to-end API test passed (create game → task → review → blocker)
+- [x] Next.js dashboard initialized (TypeScript + Tailwind + App Router)
+- [x] Dashboard pages: overview, game list, review inbox, agent status
+- [x] API client (`src/lib/api.ts`) connected to backend
+- [x] Dashboard connected and running against live backend (2026-03-06)
+- [x] First real game can be entered through the dashboard (Create Game form added)
 
-**Status:** Not Started
+**Status:** ✅ Complete
 
 ---
 
@@ -111,6 +115,7 @@ Each phase builds on the previous one and adds operational capability.
 
 ## Version History
 
-| Version | Date       | Notes                        |
-|---------|------------|------------------------------|
-| 0.1     | 2026-03-06 | Initial phase plan created   |
+| Version | Date       | Notes                                              |
+|---------|------------|----------------------------------------------------|
+| 0.1     | 2026-03-06 | Initial phase plan created                         |
+| 0.2     | 2026-03-06 | Phase 0 complete, Phase 1 backend + dashboard done || 0.3     | 2026-03-06 | Phase 1 complete                                   |
